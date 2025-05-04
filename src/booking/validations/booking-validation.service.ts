@@ -6,7 +6,10 @@ import {
   RoomAvailableForRangeDates,
 } from '.';
 
-
+/**
+ * Service responsible for validating booking requests
+ * @class BookingValidate
+ */
 @Injectable()
 export class BookingValidate {
   constructor(
@@ -14,8 +17,17 @@ export class BookingValidate {
     private readonly roomAvailable: RoomAvailableForRangeDates,
     private readonly hasEnoughCapacity: HasEnoughCapacityValidation,
   ) {}
+
+  /**
+   * Validates a booking request and calculates the total price
+   * @param payload - The booking request data transfer object
+   * @returns Promise<number> - The total price of the booking if validation passes
+   * @throws BadRequestException if the room is not available or doesn't have enough capacity
+   */
   async validateBooking(payload: CreateBookingDto): Promise<number> {
     const { checkInDate, checkOutDate, guests, roomId } = payload;
+
+    // Perform all validations concurrently
     const [availabilityResult, capacityResult, totalPrice] = await Promise.all([
       this.roomAvailable.roomAvailableForRangeDates(
         roomId,
@@ -29,10 +41,15 @@ export class BookingValidate {
         checkOutDate,
       ),
     ]);
+
+    // Validate room availability
     if (!availabilityResult.isValid)
       throw new BadRequestException(availabilityResult.message);
+
+    // Validate room capacity
     if (!capacityResult.isValid)
       throw new BadRequestException(capacityResult.message);
+
     return totalPrice;
   }
 }

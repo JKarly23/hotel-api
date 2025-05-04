@@ -9,6 +9,7 @@ import {
 } from 'typeorm';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { RoomType, RoomStatus } from '../types/room.enum';
+import { Booking } from 'src/booking/entities/booking.entity';
 
 @Entity('Rooms')
 export class Room {
@@ -61,6 +62,14 @@ export class Room {
   @ApiProperty({ description: 'Image URL of the room' })
   @Column()
   img: string;
+  
+  @ApiPropertyOptional({
+    type: () => [Booking],
+    description: 'Bookings associated with the room',
+  })
+  @OneToMany(() => Booking, (booking) => booking.room)
+  @JoinColumn()
+  bookings: Booking[];
 
   
 }

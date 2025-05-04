@@ -7,6 +7,7 @@ import {
 } from 'typeorm';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Role } from '../types/roles.enum';
+import { Booking } from 'src/booking/entities/booking.entity';
 
 @Entity('Users')
 export class Auth {
@@ -75,4 +76,12 @@ export class Auth {
   })
   @Column({ type: 'enum', enum: Role, default: Role.USER })
   role: Role;
+
+  @ApiPropertyOptional({
+    type: () => [Booking],
+    description: 'Bookings associated with the user',
+  })
+  @OneToMany(() => Booking, (booking) => booking.user)
+  @JoinColumn()
+  bookings: Booking[];
 }

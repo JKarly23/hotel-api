@@ -12,6 +12,7 @@ import {
 import { AuthModule } from 'src/auth/auth.module';
 import { RoomModule } from 'src/room/room.module';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
+import { PassportModule } from '@nestjs/passport';
 @Module({
   controllers: [BookingController],
   providers: [
@@ -22,7 +23,12 @@ import { RolesGuard } from 'src/auth/guards/roles.guard';
     CalculateTotalPriceValidation,
     RolesGuard,
   ],
-  imports: [TypeOrmModule.forFeature([Booking]), AuthModule, RoomModule],
+  imports: [
+    TypeOrmModule.forFeature([Booking]),
+    AuthModule,
+    RoomModule,
+    PassportModule.register({ defaultStrategy: 'jwt' }),
+  ],
   exports: [BookingService, TypeOrmModule],
 })
 export class BookingModule {}

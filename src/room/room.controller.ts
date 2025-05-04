@@ -8,12 +8,14 @@ import { Roles } from 'src/auth/decorators/roles.decorator';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { Role } from 'src/auth/types/roles.enum';
 import { PaginationDto } from './dto/pagination.dto';
+import { Auth } from 'src/auth/decorators/auth.decorator';
 
 @Controller('room')
 export class RoomController {
   constructor(private readonly roomService: RoomService) {}
 
   @Post()
+  @Auth(Role.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create a new room (Admin only)' })
   @ApiResponse({ status: 201, description: 'Room successfully created' })
@@ -41,6 +43,7 @@ export class RoomController {
   }
 
   @Patch(':id')
+  @Auth(Role.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Update a room (Admin only)' })
   @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
@@ -54,6 +57,7 @@ export class RoomController {
   }
 
   @Delete(':id')
+  @Auth(Role.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Delete a room (Admin only)' })
   @ApiParam({ name: 'id', type: 'string', format: 'uuid' })

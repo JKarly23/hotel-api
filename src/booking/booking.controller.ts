@@ -1,17 +1,21 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards } from '@nestjs/common';
 import { BookingService } from './booking.service';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { UpdateBookingDto } from './dto/update-booking.dto';
 import { ApiOperation, ApiBody, ApiResponse, ApiQuery, ApiParam } from '@nestjs/swagger';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { Role } from 'src/auth/types/roles.enum';
+import { AuthGuard } from '@nestjs/passport';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { PaginationDto } from 'src/room/dto/pagination.dto';
 
+@UseGuards(AuthGuard( ), RolesGuard)
 @Controller('booking')
 export class BookingController {
   constructor(private readonly bookingService: BookingService) {}
 
   @Post()
+  @Roles(Role.USER)
   @ApiOperation({ summary: 'Create a new booking' })
   @ApiBody({ type: CreateBookingDto })
   @ApiResponse({ status: 201, description: 'Booking created successfully.' })
@@ -21,6 +25,7 @@ export class BookingController {
   }
 
   @Get()
+  @Roles(Role.ADMIN, Role.RECEPCIONIST)
   @ApiOperation({ summary: 'Get all bookings (paginated)' })
   @ApiQuery({
     name: 'page',
@@ -67,6 +72,7 @@ export class BookingController {
   }
 
   @Patch('checkIn/:id')
+  @Roles(Role.RECEPCIONIST)
   @ApiOperation({ summary: 'Check in a booking (receptionist only)' })
   @ApiParam({ name: 'id', description: 'Booking ID' })
   @ApiResponse({ status: 200, description: 'Check-in successful.' })
@@ -75,8 +81,9 @@ export class BookingController {
     return this.bookingService.checkIn(id);
   }
 
-  @Roles(Role.RECEPCIONISTA)
+
   @Patch('checkOut/:id')
+  @Roles(Role.RECEPCIONIST)
   @ApiOperation({ summary: 'Check out a booking (receptionist only)' })
   @ApiParam({ name: 'id', description: 'Booking ID' })
   @ApiResponse({ status: 200, description: 'Check-out successful.' })
@@ -86,6 +93,7 @@ export class BookingController {
   }
 
   @Patch(':id')
+  @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Update a booking (admin only)' })
   @ApiParam({ name: 'id', description: 'Booking ID' })
   @ApiBody({ type: UpdateBookingDto })
@@ -96,6 +104,7 @@ export class BookingController {
   }
 
   @Delete(':id')
+  @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Delete a booking (admin only)' })
   @ApiParam({ name: 'id', description: 'Booking ID' })
   @ApiResponse({ status: 200, description: 'Booking deleted successfully.' })

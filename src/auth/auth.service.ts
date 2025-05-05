@@ -14,6 +14,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { LoginUserDto } from './dto/login-auth.dto';
 import * as bcrypt from 'bcryptjs';
+import { Booking } from 'src/booking/entities/booking.entity';
 
 @Injectable()
 export class AuthService {
@@ -35,7 +36,7 @@ export class AuthService {
       return {
         id: newUser.id,
         ...data,
-        token: await this.getJwtToken({ id: newUser.id }),
+        token: await this.getJwtToken({ id: newUser.id, role: newUser.role }),
       };
     } catch (err) {
       this.handleException(err);
@@ -50,8 +51,45 @@ export class AuthService {
     const { password: pass, ...data } = user;
     return {
       ...data,
-      token: await this.getJwtToken({ id: user.id }),
+      token: await this.getJwtToken({ id: user.id, role: user.role }),
     };
+  }
+
+  async findAll(page = 1, limit = 10) {
+    const [users, total] = await this.userRepository.findAndCount({
+      take: limit,
+      skip: (page - 1) * limit,
+      relations: {
+        bookings: true,
+      },
+    });
+    return {
+      users: users.map((user: Auth) => ({
+        ...user,
+        bookings: user.bookings.map((booking: Booking) => ({
+          id: booking.id,
+          checkIn: booking.checkInDate,
+          checkOut: booking.checkOutDate,
+          total: booking.totalPrice,
+          room: booking.room.number,
+        })),
+      })),
+      total,
+      limit: limit,
+      totalPages: Math.ceil(total / limit),
+    };
+  }
+  async update(id: string, updateAuthDto: CreateAuthDto) {
+    try {
+      const user = await this.userRepository.preload({
+        id,
+        ...updateAuthDto,
+      });
+      if (!user) throw new NotFoundException(`User with id ${id} not found`);
+      return this.userRepository.save(user);
+    } catch (error) {
+      this.handleException(error);
+    }
   }
 
   handleException(err: any) {
@@ -61,7 +99,7 @@ export class AuthService {
     throw new InternalServerErrorException(err.message);
   }
 
-  async getJwtToken(payload: { id: string }) {
+  async getJwtToken(payload: { id: string; role: string }) {
     const token = await this.jwtService.signAsync(payload);
     return token;
   }

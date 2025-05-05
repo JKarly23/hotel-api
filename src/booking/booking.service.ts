@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { UpdateBookingDto } from './dto/update-booking.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -12,6 +12,7 @@ import { BookingStatus } from './types/booking.enum';
 
 @Injectable()
 export class BookingService {
+  logger = new Logger('BookingService');
   constructor(
     @InjectRepository(Booking)
     private readonly bookingRepository: Repository<Booking>,

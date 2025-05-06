@@ -37,6 +37,7 @@ export class CreateBookingDto {
   checkOutDate: Date;
 
   @ApiProperty({ description: 'Cantidad de huéspedes' })
+  @Type(() => Number)
   @IsNumber()
   guests: number;
 

@@ -1,17 +1,23 @@
-import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateRoomDto } from './dto/create-room.dto';
 import { UpdateRoomDto } from './dto/update-room.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Room } from './entities/room.entity';
+import { RoomStatus } from './types/room.enum';
 
 @Injectable()
 export class RoomService {
   constructor(
     @InjectRepository(Room)
     private readonly roomRepository: Repository<Room>,
-  ){}
-    
+  ) {}
+
   async create(createRoomDto: CreateRoomDto) {
     try {
       const room = this.roomRepository.create(createRoomDto);
@@ -57,6 +63,18 @@ export class RoomService {
     };
   }
 
+  async findRoomsAvailable() {
+    const data = await this.roomRepository.find({
+      where: { status: RoomStatus.AVAILABLE },
+    });
+    return data.map((room) => ({
+      ...room,
+      img: room.img
+        ? `${process.env.BASE_URL || 'http://localhost:3001'}/public${room.img}`
+        : null,
+    }));
+  }
+
   async update(id: string, updateRoomDto: UpdateRoomDto) {
     const room = await this.roomRepository.preload({ id, ...updateRoomDto });
     if (!room) throw new NotFoundException('Room not found');
@@ -66,9 +84,7 @@ export class RoomService {
   async remove(id: string) {
     const resp = await this.roomRepository.delete(id);
     if (resp.affected === 0)
-      throw new NotFoundException(
-        `Room with id "${id}" not found`,
-      );
+      throw new NotFoundException(`Room with id "${id}" not found`);
     return {
       message: `Room with id "${id}" deleted`,
       status: 200,
@@ -76,8 +92,7 @@ export class RoomService {
   }
 
   handleDbError(error: any) {
-    if (error.code === '23505')
-      throw new BadRequestException(error.message);
+    if (error.code === '23505') throw new BadRequestException(error.message);
     throw new InternalServerErrorException(
       'Ha ocurrido un error inesperado',
       error.message,

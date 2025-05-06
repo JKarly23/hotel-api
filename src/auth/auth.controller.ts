@@ -1,5 +1,6 @@
 import { Controller, Post, Body, Req, Get, Param, Patch } from '@nestjs/common';
 import { AuthService } from './auth.service';
+import { UpdateAuthDto } from './dto/update-auth.dto';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { LoginUserDto } from './dto/login-auth.dto';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiParam } from '@nestjs/swagger';
@@ -30,7 +31,7 @@ export class AuthController {
     return this.authService.login(loginUserDto);
   }
   @Get('/profile')
-  @Auth()
+  @Auth(Role.ADMIN, Role.USER, Role.RECEPCIONIST)
   @ApiOperation({ summary: 'Get user profile' })
   @ApiResponse({ status: 200, description: 'Profile retrieved successfully.' })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
@@ -49,14 +50,14 @@ export class AuthController {
   }
 
   @Patch('/:id')
-  @Auth()
+  @Auth(Role.ADMIN, Role.USER, Role.RECEPCIONIST)
   @ApiOperation({ summary: 'Update user' })
   @ApiParam({ name: 'id', description: 'User ID' })
-  @ApiBody({ type: CreateAuthDto })
+  @ApiBody({ type: UpdateAuthDto })
   @ApiResponse({ status: 200, description: 'User updated successfully.' })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   @ApiResponse({ status: 404, description: 'User not found.' })
-  update(@Param('id') id: string, @Body() updateAuthDto: CreateAuthDto) {
+  update(@Param('id') id: string, @Body() updateAuthDto: UpdateAuthDto) {
     return this.authService.update(id, updateAuthDto);
   }
 

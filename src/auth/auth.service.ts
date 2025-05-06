@@ -15,6 +15,7 @@ import { JwtService } from '@nestjs/jwt';
 import { LoginUserDto } from './dto/login-auth.dto';
 import * as bcrypt from 'bcryptjs';
 import { Booking } from 'src/booking/entities/booking.entity';
+import { UpdateAuthDto } from './dto/update-auth.dto';
 
 @Injectable()
 export class AuthService {
@@ -79,7 +80,7 @@ export class AuthService {
       totalPages: Math.ceil(total / limit),
     };
   }
-  async update(id: string, updateAuthDto: CreateAuthDto) {
+  async update(id: string, updateAuthDto: UpdateAuthDto) {
     try {
       const user = await this.userRepository.preload({
         id,

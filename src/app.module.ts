@@ -5,6 +5,7 @@ import { AuthModule } from './auth/auth.module';
 import { RoomModule } from './room/room.module';
 import { BookingModule } from './booking/booking.module';
 import { TaskModule } from './task/task.module';
+import { SeedModule } from './seed/seed.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { TaskModule } from './task/task.module';
     RoomModule,
     BookingModule,
     TaskModule,
+    SeedModule,
   ],
   controllers: [],
   providers: [],

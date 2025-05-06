@@ -2,10 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, Pa
 import { RoomService } from './room.service';
 import { CreateRoomDto } from './dto/create-room.dto';
 import { UpdateRoomDto } from './dto/update-room.dto';
-import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiResponse } from '@nestjs/swagger';
-import { Roles } from 'src/auth/decorators/roles.decorator';
-import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { Role } from 'src/auth/types/roles.enum';
 import { PaginationDto } from './dto/pagination.dto';
 import { Auth } from 'src/auth/decorators/auth.decorator';
@@ -31,6 +28,14 @@ export class RoomController {
   @ApiResponse({ status: 200, description: 'List of rooms' })
   findAll(@Query() { limit, page }: PaginationDto) {
     return this.roomService.findAll(page, limit);
+  }
+  
+  @Get('available')
+  @ApiOperation({ summary: 'Get room by status available' })
+  @ApiResponse({ status: 200, description: 'Room found' })
+  @ApiResponse({ status: 404, description: 'Room not found' })
+  findRoomsAvailable() {
+    return this.roomService.findRoomsAvailable();
   }
 
   @Get(':id')

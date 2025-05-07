@@ -1,8 +1,24 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, ParseUUIDPipe } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+  ParseUUIDPipe,
+} from '@nestjs/common';
 import { RoomService } from './room.service';
 import { CreateRoomDto } from './dto/create-room.dto';
 import { UpdateRoomDto } from './dto/update-room.dto';
-import { ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiResponse } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiParam,
+  ApiQuery,
+  ApiResponse,
+} from '@nestjs/swagger';
 import { Role } from 'src/auth/types/roles.enum';
 import { PaginationDto } from './dto/pagination.dto';
 import { Auth } from 'src/auth/decorators/auth.decorator';
@@ -29,7 +45,14 @@ export class RoomController {
   findAll(@Query() { limit, page }: PaginationDto) {
     return this.roomService.findAll(page, limit);
   }
-  
+
+  @Get('all')
+  @ApiOperation({ summary: 'Get all rooms' })
+  @ApiResponse({ status: 200, description: 'List of rooms' })
+  findAllData() {
+    return this.roomService.findAllData();
+  }
+
   @Get('available')
   @ApiOperation({ summary: 'Get room by status available' })
   @ApiResponse({ status: 200, description: 'Room found' })
@@ -71,6 +94,4 @@ export class RoomController {
   remove(@Param('id', new ParseUUIDPipe()) id: string) {
     return this.roomService.remove(id);
   }
-
-  
 }

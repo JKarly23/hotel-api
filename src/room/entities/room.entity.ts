@@ -62,14 +62,14 @@ export class Room {
   @ApiProperty({ description: 'Image URL of the room' })
   @Column()
   img: string;
-  
+
   @ApiPropertyOptional({
     type: () => [Booking],
     description: 'Bookings associated with the room',
   })
-  @OneToMany(() => Booking, (booking) => booking.room)
+  @OneToMany(() => Booking, (booking) => booking.room, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn()
   bookings: Booking[];
-
-  
 }

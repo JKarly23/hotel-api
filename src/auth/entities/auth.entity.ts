@@ -1,9 +1,11 @@
 import {
   Column,
+  CreateDateColumn,
   Entity,
   JoinColumn,
   OneToMany,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Role } from '../types/roles.enum';
@@ -77,11 +79,29 @@ export class Auth {
   @Column({ type: 'enum', enum: Role, default: Role.USER })
   role: Role;
 
+  @ApiProperty({ description: 'Date when the user was register' })
+  @CreateDateColumn()
+  created_at: Date;
+
+  @ApiProperty({ description: 'Date when the user was last updated' })
+  @UpdateDateColumn()
+  updated_at: Date;
+
+  @ApiProperty({ description: 'Date when the user was last login' })
+  @Column('timestamp', { nullable: true })
+  lastLogin: Date;
+
+  @ApiProperty({ description: 'Date when the user was last logout' })
+  @Column('timestamp', { nullable: true })
+  lastLogout: Date;
+
   @ApiPropertyOptional({
     type: () => [Booking],
     description: 'Bookings associated with the user',
   })
-  @OneToMany(() => Booking, (booking) => booking.user)
+  @OneToMany(() => Booking, (booking) => booking.user, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn()
   bookings: Booking[];
 }

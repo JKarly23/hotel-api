@@ -45,10 +45,14 @@ export class AuthService {
   }
   async login(loginUserDto: LoginUserDto) {
     const { email, password } = loginUserDto;
-    const user = await this.userRepository.findOneBy({ email });
+    const user = await this.userRepository.findOne({
+      where: { email },
+      relations: ['bookings'],
+    });
     if (!user) throw new NotFoundException('User not found');
     if (!(await bcrypt.compare(password, user.password)))
       throw new UnauthorizedException(`Credentials are not valid`);
+    await this.userRepository.update(user.id, { lastLogin: new Date() });
     const { password: pass, ...data } = user;
     return {
       ...data,
@@ -60,37 +64,46 @@ export class AuthService {
     const [users, total] = await this.userRepository.findAndCount({
       take: limit,
       skip: (page - 1) * limit,
-      relations: {
-        bookings: true,
-      },
     });
     return {
-      users: users.map((user: Auth) => ({
-        ...user,
-        bookings: user.bookings.map((booking: Booking) => ({
-          id: booking.id,
-          checkIn: booking.checkInDate,
-          checkOut: booking.checkOutDate,
-          total: booking.totalPrice,
-          room: booking.room.number,
-        })),
-      })),
+      users,
       total,
       limit: limit,
       totalPages: Math.ceil(total / limit),
     };
   }
+  async findAllData() {
+    return await this.userRepository.find({
+      relations: ['bookings'],
+    });
+  }
   async update(id: string, updateAuthDto: UpdateAuthDto) {
     try {
-      const user = await this.userRepository.preload({
-        id,
-        ...updateAuthDto,
+      const user = await this.userRepository.findOne({
+        where: { id },
+        relations: ['bookings'],
       });
+
       if (!user) throw new NotFoundException(`User with id ${id} not found`);
-      return this.userRepository.save(user);
+      const updatedUser = this.userRepository.merge(user, updateAuthDto);
+
+      const userUpdated = await this.userRepository.save(updatedUser);
+      const { password, ...data } = userUpdated;
+      return data;
     } catch (error) {
       this.handleException(error);
     }
+  }
+
+  async logout(id: string) {
+    await this.userRepository.update(id, { lastLogout: new Date() });
+  }
+
+  async refreshToken(user: Express.User) {
+    return {
+      ...user,
+      token: await this.getJwtToken({ id: user.id, role: user?.role }),
+    };
   }
 
   handleException(err: any) {

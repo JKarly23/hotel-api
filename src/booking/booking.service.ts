@@ -1,4 +1,9 @@
-import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { UpdateBookingDto } from './dto/update-booking.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -19,7 +24,7 @@ export class BookingService {
     private readonly bookingValidate: BookingValidate,
     private readonly roomAvailable: RoomAvailableForRangeDates,
   ) {}
-  
+
   async create(payload: CreateBookingDto) {
     const { userId, roomId } = payload;
     const price = await this.bookingValidate.validateBooking(payload);
@@ -99,6 +104,12 @@ export class BookingService {
     if (!bookings.length)
       throw new NotFoundException('Bookings not found for the room');
     return bookings.map(this.mapBookingData);
+  }
+
+  async findAllData() {
+    return await this.bookingRepository.find({
+      select: ['checkInDate','checkOutDate','id','paymentStatus', 'actualCheckIn','actualCheckOut', 'totalPrice', 'status'],
+    });
   }
 
   async findOne(id: string) {

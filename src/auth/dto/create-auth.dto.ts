@@ -4,7 +4,6 @@ import {
     IsOptional,
     IsString,
     MinLength,
-    IsUUID,
     IsDateString,
     IsArray,
 } from 'class-validator';
@@ -12,14 +11,6 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Role } from '../types/roles.enum';
 
 export class CreateAuthDto {
-    @ApiPropertyOptional({
-        example: 'a1b2c3d4-e5f6-7890-1234-56789abcdef0',
-        description: 'Identificador único del usuario (UUID)',
-    })
-    @IsOptional()
-    @IsUUID()
-    id?: string;
-
     @ApiProperty({ description: 'Nombre completo del usuario', minLength: 3 })
     @IsString()
     @MinLength(3)

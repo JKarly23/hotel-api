@@ -52,6 +52,13 @@ export class RoomService {
     }
   }
 
+  async findAllData() {
+    return await this.roomRepository.find({
+      select: ['id', 'number', 'status', 'price', 'type', 'bookings'],
+      relations:['bookings']
+    });
+  }
+
   async findOne(id: string) {
     const room = await this.roomRepository.findOneBy({ id });
     if (!room) throw new NotFoundException('Habitacion no encontrada');

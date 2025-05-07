@@ -1,15 +1,31 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { BookingService } from './booking.service';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { UpdateBookingDto } from './dto/update-booking.dto';
-import { ApiOperation, ApiBody, ApiResponse, ApiQuery, ApiParam } from '@nestjs/swagger';
+import {
+  ApiOperation,
+  ApiBody,
+  ApiResponse,
+  ApiQuery,
+  ApiParam,
+} from '@nestjs/swagger';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { Role } from 'src/auth/types/roles.enum';
 import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { PaginationDto } from 'src/room/dto/pagination.dto';
 
-@UseGuards(AuthGuard( ), RolesGuard)
+@UseGuards(AuthGuard(), RolesGuard)
 @Controller('booking')
 export class BookingController {
   constructor(private readonly bookingService: BookingService) {}
@@ -42,6 +58,14 @@ export class BookingController {
   @ApiResponse({ status: 200, description: 'List of bookings.' })
   findAll(@Query('query') { page, limit }: PaginationDto) {
     return this.bookingService.findAll(page, limit);
+  }
+
+  @Get('all')
+  @Roles(Role.ADMIN, Role.RECEPCIONIST)
+  @ApiOperation({ summary: 'Get all bookings' })
+  @ApiResponse({ status: 200, description: 'List of bookings.' })
+  findAllData() {
+    return this.bookingService.findAllData();
   }
 
   @Get('user/:userId')
@@ -80,7 +104,6 @@ export class BookingController {
   checkIn(@Param('id') id: string) {
     return this.bookingService.checkIn(id);
   }
-
 
   @Patch('checkOut/:id')
   @Roles(Role.RECEPCIONIST)

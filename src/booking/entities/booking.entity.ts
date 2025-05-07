@@ -120,7 +120,7 @@ import { BookingStatus, PaymentStatus, PaymentMethod } from '../types/booking.en
       type: () => Auth,
       description: 'Usuario que realizó la reserva',
     })
-    @ManyToOne(() => Auth, (user) => user.bookings, { eager: true })
+    @ManyToOne(() => Auth, (user) => user.bookings, { eager: true, onDelete: 'CASCADE' })
     @JoinColumn()
     user: Auth;
   
@@ -128,7 +128,7 @@ import { BookingStatus, PaymentStatus, PaymentMethod } from '../types/booking.en
       type: () => Room,
       description: 'Habitación asociada a la reserva',
     })
-    @ManyToOne(() => Room, (room) => room.bookings, { eager: true })
+    @ManyToOne(() => Room, (room) => room.bookings, { eager: true, onDelete: 'CASCADE' })
     @JoinColumn()
     room: Room;
   }

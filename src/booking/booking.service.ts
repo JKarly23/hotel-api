@@ -175,8 +175,6 @@ export class BookingService {
       });
       if (!booking)
         throw new NotFoundException(`Booking with id ${id} not found`);
-      if (booking.status !== BookingStatus.CONFIRMED)
-        throw new BadRequestException('You can only update confirmed bookings');
 
       const { roomId, checkInDate, checkOutDate } = updateBookingDto;
       if (roomId && checkInDate && checkOutDate) {

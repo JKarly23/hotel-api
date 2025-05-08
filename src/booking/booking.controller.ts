@@ -116,7 +116,7 @@ export class BookingController {
   }
 
   @Patch(':id')
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.USER)
   @ApiOperation({ summary: 'Update a booking (admin only)' })
   @ApiParam({ name: 'id', description: 'Booking ID' })
   @ApiBody({ type: UpdateBookingDto })

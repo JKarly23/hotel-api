@@ -21,6 +21,12 @@ export class SeedService {
       return {
         message: `Rooms seeded successfully, inserted (${rooms.length} rooms)`,
         code: 200,
+        rooms: rooms.map((room) => ({
+          ...room,
+          img: !room?.img.startsWith('https')
+            ? `${process.env.BASE_URL || 'http://localhost:3001'}/public${room?.img}`
+            : room.img,
+        })),
       };
     } catch (e) {
       return {

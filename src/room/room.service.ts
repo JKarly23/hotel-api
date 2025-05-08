@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Injectable,
   InternalServerErrorException,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { CreateRoomDto } from './dto/create-room.dto';
@@ -13,6 +14,7 @@ import { RoomStatus } from './types/room.enum';
 
 @Injectable()
 export class RoomService {
+  logger = new Logger('RoomService');
   constructor(
     @InjectRepository(Room)
     private readonly roomRepository: Repository<Room>,
@@ -34,14 +36,14 @@ export class RoomService {
         skip: (page - 1) * limit,
         order: { number: 'ASC' },
       });
-      const roomsWithFullUrl = rooms.map((room) => ({
-        ...room,
-        img: room.img
-          ? `${process.env.BASE_URL || 'http://localhost:3001'}/public${room.img}`
-          : null,
-      }));
+
       return {
-        rooms: roomsWithFullUrl,
+        rooms: rooms.map((room) => ({
+          ...room,
+          img: !room.img.startsWith('http')
+            ? `${process.env.BASE_URL || 'http://localhost:3001'}/public${room.img}`
+            : room.img,
+        })),
         total,
         limit,
         page,
@@ -53,10 +55,26 @@ export class RoomService {
   }
 
   async findAllData() {
-    return await this.roomRepository.find({
-      select: ['id', 'number', 'status', 'price', 'type', 'bookings'],
-      relations:['bookings']
+    const rooms = await this.roomRepository.find({
+      select: [
+        'id',
+        'number',
+        'status',
+        'price',
+        'type',
+        'bookings',
+        'capacity',
+        'floor',
+        'img',
+      ],
+      relations: ['bookings'],
     });
+    return rooms.map((room) => ({
+      ...room,
+      img: !room.img.startsWith('https')
+        ? `${process.env.BASE_URL || 'http://localhost:3001'}/public${room.img}`
+        : room.img,
+    }));
   }
 
   async findOne(id: string) {
@@ -64,9 +82,9 @@ export class RoomService {
     if (!room) throw new NotFoundException('Habitacion no encontrada');
     return {
       ...room,
-      img: room.img
+      img: !room.img.startsWith('https')
         ? `${process.env.BASE_URL || 'http://localhost:3001'}/public${room.img}`
-        : null,
+        : room.img,
     };
   }
 

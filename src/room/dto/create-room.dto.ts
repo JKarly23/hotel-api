@@ -10,6 +10,7 @@ import {
   } from 'class-validator';
   import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { RoomType, RoomStatus } from '../types/room.enum';
+import { Type } from 'class-transformer';
   
   export class CreateRoomDto {
     @ApiProperty({
@@ -20,6 +21,7 @@ import { RoomType, RoomStatus } from '../types/room.enum';
       {},
       { message: 'El número de habitación debe ser un valor numérico' },
     )
+    @Type(() => Number)
     @IsPositive({ message: 'El número de habitación debe ser positivo' })
     @Min(1, { message: 'El número de habitación no puede ser menor a 1' })
     number: number;
@@ -37,6 +39,7 @@ import { RoomType, RoomStatus } from '../types/room.enum';
       example: 2,
       description: 'Capacidad máxima de personas que puede alojar la habitación',
     })
+    @Type(() => Number)
     @IsInt({ message: 'La capacidad debe ser un número entero' })
     @Min(1, { message: 'La capacidad mínima es 1' })
     capacity: number;
@@ -45,6 +48,7 @@ import { RoomType, RoomStatus } from '../types/room.enum';
       example: 150.5,
       description: 'Precio por noche en la habitación',
     })
+    @Type(() => Number)
     @IsNumber({}, { message: 'El precio debe ser un número' })
     @IsPositive({ message: 'El precio debe ser mayor a 0' })
     price: number;
@@ -72,6 +76,7 @@ import { RoomType, RoomStatus } from '../types/room.enum';
       example: 3,
       description: 'Número del piso donde se encuentra la habitación',
     })
+    @Type(() => Number)
     @IsInt({ message: 'El piso debe ser un número entero' })
     @Min(0, { message: 'El piso no puede ser negativo' })
     floor: number;

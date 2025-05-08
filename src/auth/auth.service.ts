@@ -78,7 +78,6 @@ export class AuthService {
     });
   }
   async update(id: string, updateAuthDto: UpdateAuthDto) {
-    this.logger.debug('User', updateAuthDto);
     try {
       const user = await this.userRepository.findOne({
         where: { id },
@@ -90,8 +89,6 @@ export class AuthService {
 
       const userUpdated = await this.userRepository.save(updatedUser);
       const { password, ...data } = userUpdated;
-      this.logger.debug('Data', data)
-
       return data;
     } catch (error) {
       this.handleException(error);

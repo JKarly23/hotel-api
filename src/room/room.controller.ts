@@ -49,6 +49,7 @@ export class RoomController {
   @Get('all')
   @ApiOperation({ summary: 'Get all rooms' })
   @ApiResponse({ status: 200, description: 'List of rooms' })
+  @Auth(Role.ADMIN, Role.RECEPCIONIST)
   findAllData() {
     return this.roomService.findAllData();
   }

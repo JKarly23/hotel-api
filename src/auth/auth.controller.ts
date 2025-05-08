@@ -69,7 +69,7 @@ export class AuthController {
   }
 
   @Get('all')
-  @Auth(Role.ADMIN)
+  @Auth(Role.ADMIN, Role.RECEPCIONIST)
   @ApiOperation({ summary: 'Get all users' })
   @ApiResponse({
     status: 200,

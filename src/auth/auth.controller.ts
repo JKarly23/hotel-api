@@ -1,4 +1,14 @@
-import { Controller, Post, Body, Req, Get, Param, Patch } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Req,
+  Get,
+  Param,
+  Patch,
+  Delete,
+  ParseUUIDPipe,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { UpdateAuthDto } from './dto/update-auth.dto';
 import { CreateAuthDto } from './dto/create-auth.dto';
@@ -98,5 +108,17 @@ export class AuthController {
   refreshToken(@Req() req: Request) {
     const user = req.user;
     return user ? this.authService.refreshToken(user) : null;
+  }
+
+  @Delete(':id')
+  @Auth(Role.ADMIN)
+  @ApiOperation({ summary: 'Delete user' })
+  @ApiParam({ name: 'id', description: 'User ID (UUID format)' })
+  @ApiResponse({ status: 200, description: 'User deleted successfully.' })
+  @ApiResponse({ status: 401, description: 'Unauthorized.' })
+  @ApiResponse({ status: 403, description: 'Forbidden. Requires admin role.' })
+  @ApiResponse({ status: 404, description: 'User not found.' })
+  delete(@Param('id', new ParseUUIDPipe()) id: string) {
+    return this.authService.delete(id);
   }
 }

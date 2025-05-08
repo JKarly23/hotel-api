@@ -190,11 +190,10 @@ export class BookingService {
             'Room is not available for the given dates',
           );
       }
-
-      const entityToUpdate = await this.bookingRepository.merge({
+      const entityToUpdate = this.bookingRepository.merge(
         booking,
-        ...updateBookingDto,
-      });
+        updateBookingDto,
+      );
       if (!entityToUpdate)
         throw new NotFoundException(`Booking with id ${id} not found`);
       return await this.bookingRepository.save(entityToUpdate);

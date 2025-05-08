@@ -119,12 +119,19 @@ export class BookingService {
     return this.mapBookingData(booking);
   }
 
-  async checkIn(id: string) {
+  async checkIn(payload: { id: string; userId: string; roomId: string }) {
+    const { id, roomId, userId } = payload;
     const queryRunner =
       this.bookingRepository.manager.connection.createQueryRunner();
     await queryRunner.startTransaction();
     try {
-      const booking = await queryRunner.manager.findOneBy(Booking, { id });
+      const booking = await queryRunner.manager.findOne(Booking, {
+        where: {
+          id,
+          room: { id: roomId },
+          user: { id: userId },
+        },
+      });
       if (!booking) throw new NotFoundException('Booking not found');
       const now = new Date();
       const checkInDate = new Date(booking.checkInDate);
@@ -145,12 +152,19 @@ export class BookingService {
     }
   }
 
-  async checkOut(id: string) {
+  async checkOut(payload: { id: string; userId: string; roomId: string }) {
+    const { id, roomId, userId } = payload;
     const queryRunner =
       this.bookingRepository.manager.connection.createQueryRunner();
     await queryRunner.startTransaction();
     try {
-      const booking = await queryRunner.manager.findOneBy(Booking, { id });
+      const booking = await queryRunner.manager.findOne(Booking, {
+        where: {
+          id,
+          room: { id: roomId },
+          user: { id: userId },
+        },
+      });
       if (!booking) throw new NotFoundException('Booking not found');
       booking.actualCheckOut = new Date();
       booking.status = BookingStatus.CHECKED_OUT;
@@ -181,7 +195,7 @@ export class BookingService {
         const { isValid } = await this.roomAvailable.roomAvailableForRangeDates(
           roomId,
           checkInDate,
-          checkOutDate
+          checkOutDate,
         );
         if (!isValid)
           throw new BadRequestException(

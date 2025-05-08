@@ -95,24 +95,24 @@ export class BookingController {
     return this.bookingService.findOne(id);
   }
 
-  @Patch('checkIn/:id')
+  @Post('check-in')
   @Roles(Role.RECEPCIONIST)
   @ApiOperation({ summary: 'Check in a booking (receptionist only)' })
   @ApiParam({ name: 'id', description: 'Booking ID' })
   @ApiResponse({ status: 200, description: 'Check-in successful.' })
   @ApiResponse({ status: 404, description: 'Booking not found.' })
-  checkIn(@Param('id') id: string) {
-    return this.bookingService.checkIn(id);
+  checkIn(@Body() payload: { id: string; userId: string; roomId: string }) {
+    return this.bookingService.checkIn(payload);
   }
 
-  @Patch('checkOut/:id')
+  @Post('check-out')
   @Roles(Role.RECEPCIONIST)
   @ApiOperation({ summary: 'Check out a booking (receptionist only)' })
   @ApiParam({ name: 'id', description: 'Booking ID' })
   @ApiResponse({ status: 200, description: 'Check-out successful.' })
   @ApiResponse({ status: 404, description: 'Booking not found.' })
-  checkOut(@Param('id') id: string) {
-    return this.bookingService.checkOut(id);
+  checkOut(@Body() payload: { id: string; userId: string; roomId: string }) {
+    return this.bookingService.checkOut(payload);
   }
 
   @Patch(':id')

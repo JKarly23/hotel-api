@@ -9,18 +9,21 @@ import { SeedModule } from './seed/seed.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: process.env.NODE_ENV === 'prod' ? '.env.prod' : '.env',
+    }),
     TypeOrmModule.forRootAsync({
-      inject:[ConfigService],
-      useFactory: (configService: ConfigService) => ({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
         type: 'postgres',
-        host: configService.get<string>('HOST'),
-        port: Number(configService.get<number>('DBPORT')),
-        username: 'postgres',
-        password: 'postgres',
-        database: configService.get<string>('DBNAME'),
+        host: config.get('DB_HOST'),
+        port: +config.get('DB_PORT'),
+        username: config.get('DB_USER'),
+        password: config.get('DB_PASS'),
+        database: config.get('DB_NAME'),
         autoLoadEntities: true,
-        synchronize: true,
+        synchronize: config.get('NODE_ENV') !== 'prod',
       }),
     }),
     AuthModule,

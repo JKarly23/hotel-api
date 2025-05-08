@@ -107,9 +107,7 @@ export class BookingService {
   }
 
   async findAllData() {
-    return await this.bookingRepository.find({
-      select: ['checkInDate','checkOutDate','id','paymentStatus', 'actualCheckIn','actualCheckOut', 'totalPrice', 'status'],
-    });
+    return await this.bookingRepository.find();
   }
 
   async findOne(id: string) {
@@ -171,7 +169,10 @@ export class BookingService {
 
   async update(id: string, updateBookingDto: UpdateBookingDto) {
     try {
-      const booking = await this.bookingRepository.findOne({ where: { id } });
+      const booking = await this.bookingRepository.findOne({
+        where: { id },
+        relations: ['room', 'user'],
+      });
       if (!booking)
         throw new NotFoundException(`Booking with id ${id} not found`);
       if (booking.status !== BookingStatus.CONFIRMED)
@@ -182,7 +183,7 @@ export class BookingService {
         const { isValid } = await this.roomAvailable.roomAvailableForRangeDates(
           roomId,
           checkInDate,
-          checkOutDate,
+          checkOutDate
         );
         if (!isValid)
           throw new BadRequestException(
@@ -190,8 +191,8 @@ export class BookingService {
           );
       }
 
-      const entityToUpdate = await this.bookingRepository.preload({
-        id,
+      const entityToUpdate = await this.bookingRepository.merge({
+        booking,
         ...updateBookingDto,
       });
       if (!entityToUpdate)

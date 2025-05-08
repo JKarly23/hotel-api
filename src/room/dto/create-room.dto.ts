@@ -85,7 +85,6 @@ import { Type } from 'class-transformer';
       example: 'https://example.com/image.jpg',
       description: 'URL de una imagen representativa de la habitación',
     })
-    @IsUrl({}, { message: 'La imagen debe ser una URL válida' })
     @IsOptional()
     img?: string;
   }

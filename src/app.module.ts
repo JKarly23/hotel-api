@@ -11,8 +11,7 @@ import { SeedModule } from './seed/seed.module';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath:
-        process.env.NODE_ENV === 'production' ? '.env.production' : '.env',
+      envFilePath: `${process.cwd()}/${process.env.NODE_ENV === 'production' ? '.env.production' : '.env'}`,
     }),
     TypeOrmModule.forRoot({
       type: 'postgres',

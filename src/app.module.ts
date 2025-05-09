@@ -23,6 +23,12 @@ import { SeedModule } from './seed/seed.module';
       database: process.env.DB_NAME,
       autoLoadEntities: true,
       synchronize: true,
+      ssl: process.env.NODE_ENV === 'production',
+      extra: {
+        ssl: {
+          rejectUnauthorized: false,
+        },
+      },
     }),
     AuthModule,
     RoomModule,

@@ -94,9 +94,9 @@ export class RoomService {
     });
     return data.map((room) => ({
       ...room,
-      img: room.img
+      img: !room.img.startsWith('https')
         ? `${process.env.BASE_URL || 'http://localhost:3001'}/public${room.img}`
-        : null,
+        : room.img,
     }));
   }
 

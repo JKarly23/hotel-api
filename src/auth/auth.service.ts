@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  HttpStatus,
   Injectable,
   InternalServerErrorException,
   Logger,
@@ -96,12 +97,12 @@ export class AuthService {
   }
   async delete(id: string) {
     const data = await this.userRepository.delete(id);
-    return data.affected !== 0 
-    ? {
-      code: 200,
-      message: `User with id: ${id} deleted`
-    } : new NotFoundException(`User with id: ${id} not found`);
-    
+    return data.affected !== 0
+      ? {
+          code: HttpStatus.OK,
+          message: `User with id: ${id} deleted`,
+        }
+      : new NotFoundException(`User with id: ${id} not found`);
   }
 
   async logout(id: string) {

@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  HttpStatus,
   Injectable,
   InternalServerErrorException,
   Logger,
@@ -11,6 +12,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Room } from './entities/room.entity';
 import { RoomStatus } from './types/room.enum';
+import { roomsData } from 'src/seed/data/rooms.data';
 
 @Injectable()
 export class RoomService {
@@ -38,12 +40,7 @@ export class RoomService {
       });
 
       return {
-        rooms: rooms.map((room) => ({
-          ...room,
-          img: !room.img.startsWith('http')
-            ? `${process.env.BASE_URL || 'http://localhost:3001'}/public${room.img}`
-            : room.img,
-        })),
+        rooms,
         total,
         limit,
         page,
@@ -56,48 +53,22 @@ export class RoomService {
 
   async findAllData() {
     const rooms = await this.roomRepository.find({
-      select: [
-        'id',
-        'number',
-        'status',
-        'price',
-        'type',
-        'bookings',
-        'capacity',
-        'floor',
-        'img',
-      ],
       relations: ['bookings'],
     });
-    return rooms.map((room) => ({
-      ...room,
-      img: !room.img.startsWith('https')
-        ? `${process.env.BASE_URL || 'http://localhost:3001'}/public${room.img}`
-        : room.img,
-    }));
+    return rooms;
   }
 
   async findOne(id: string) {
     const room = await this.roomRepository.findOneBy({ id });
     if (!room) throw new NotFoundException('Habitacion no encontrada');
-    return {
-      ...room,
-      img: !room.img.startsWith('https')
-        ? `${process.env.BASE_URL || 'http://localhost:3001'}/public${room.img}`
-        : room.img,
-    };
+    return room;
   }
 
   async findRoomsAvailable() {
     const data = await this.roomRepository.find({
       where: { status: RoomStatus.AVAILABLE },
     });
-    return data.map((room) => ({
-      ...room,
-      img: !room.img.startsWith('https')
-        ? `${process.env.BASE_URL || 'http://localhost:3001'}/public${room.img}`
-        : room.img,
-    }));
+    return data;
   }
 
   async update(id: string, updateRoomDto: UpdateRoomDto) {
@@ -107,13 +78,17 @@ export class RoomService {
   }
 
   async remove(id: string) {
-    const resp = await this.roomRepository.delete(id);
-    if (resp.affected === 0)
-      throw new NotFoundException(`Room with id "${id}" not found`);
-    return {
-      message: `Room with id "${id}" deleted`,
-      status: 200,
-    };
+    try {
+      const resp = await this.roomRepository.delete(id);
+      if (resp.affected === 0)
+        throw new NotFoundException(`Room with id "${id}" not found`);
+      return {
+        message: `Room with id "${id}" deleted`,
+        code: HttpStatus.OK,
+      };
+    } catch (error) {
+      this.handleDbError(error);
+    }
   }
 
   handleDbError(error: any) {

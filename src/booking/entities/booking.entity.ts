@@ -132,7 +132,7 @@ export class Booking {
     type: () => Room,
     description: 'Habitación asociada a la reserva',
   })
-  @ManyToOne(() => Room, (room) => room.bookings)
+  @ManyToOne(() => Room, (room) => room.bookings, { eager: true })
   @JoinColumn()
   room: Room;
 }

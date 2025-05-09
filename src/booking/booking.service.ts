@@ -181,40 +181,69 @@ export class BookingService {
     }
   }
 
-  async update(id: string, updateBookingDto: UpdateBookingDto) {
-    try {
-      const booking = await this.bookingRepository.findOne({
-        where: { id },
-        relations: ['room', 'user'],
-      });
-      if (!booking)
-        throw new NotFoundException(`Booking with id ${id} not found`);
+async update(id: string, updateBookingDto: UpdateBookingDto) {
+  const queryRunner = this.bookingRepository.manager.connection.createQueryRunner();
+  
+  try {
+    await queryRunner.startTransaction();
 
-      const { roomId, checkInDate, checkOutDate } = updateBookingDto;
-      if (roomId && checkInDate && checkOutDate) {
-        const { isValid } = await this.roomAvailable.roomAvailableForRangeDates(
-          roomId,
-          checkInDate,
-          checkOutDate,
-        );
-        if (!isValid)
-          throw new BadRequestException(
-            'Room is not available for the given dates',
-          );
-      }
-      const entityToUpdate = this.bookingRepository.merge(
-        booking,
-        updateBookingDto,
-      );
-      if (!entityToUpdate)
-        throw new NotFoundException(`Booking with id ${id} not found`);
-      return await this.bookingRepository.save(entityToUpdate);
-    } catch (error) {
-      throw new BadRequestException(
-        error.message || `Error updating booking with id: ${id}`,
-      );
+    // Get existing booking
+    const booking = await queryRunner.manager.findOne(Booking, {
+      where: { id },
+      relations: ['room', 'user'],
+    });
+
+    if (!booking) {
+      throw new NotFoundException(`Booking with id ${id} not found`);
     }
+
+    // Validate room availability if dates/room are being updated
+    const { roomId, checkInDate, checkOutDate } = updateBookingDto;
+    if (roomId && checkInDate && checkOutDate) {
+      const { isValid } = await this.roomAvailable.roomAvailableForRangeDates(
+        roomId,
+        checkInDate, 
+        checkOutDate
+      );
+      
+      if (!isValid) {
+        throw new BadRequestException('Room is not available for the given dates');
+      }
+    }
+
+    // Prepare updated booking entity
+    const entityToUpdate = await queryRunner.manager.preload(Booking, {
+      id,
+      ...updateBookingDto,
+    });
+
+    if (!entityToUpdate) {
+      throw new NotFoundException(`Booking with id ${id} not found`);
+    }
+
+    // Handle room status update for cancellations
+    if (updateBookingDto.status === 'cancelled') {
+      await queryRunner.manager.save(Room, {
+        ...booking.room,
+        status: RoomStatus.AVAILABLE,
+      });
+    }
+
+    // Save changes and commit transaction
+    const updatedBooking = await queryRunner.manager.save(Booking, entityToUpdate);
+    await queryRunner.commitTransaction();
+    
+    return updatedBooking;
+
+  } catch (error) {
+    await queryRunner.rollbackTransaction();
+    throw new BadRequestException(
+      error.message || `Error updating booking with id: ${id}`
+    );
+  } finally {
+    await queryRunner.release();
   }
+}
 
   async remove(id: string) {
     try {

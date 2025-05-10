@@ -137,6 +137,8 @@ export class BookingService {
       });
       if (!booking) throw new NotFoundException('Booking not found');
       const now = new Date();
+      if (!booking.checkInDate)
+        throw new BadRequestException('Booking is not today or late');
       const checkInDate = new Date(booking.checkInDate);
       if (now < checkInDate)
         throw new BadRequestException('Booking is not today or late');
@@ -216,7 +218,6 @@ export class BookingService {
           );
         }
       }
-
       // Prepare updated booking entity
       const entityToUpdate = await queryRunner.manager.preload(Booking, {
         id,
@@ -233,6 +234,10 @@ export class BookingService {
           ...booking.room,
           status: RoomStatus.AVAILABLE,
         });
+        entityToUpdate.checkInDate = null;
+        entityToUpdate.checkOutDate = null;
+        entityToUpdate.paymentStatus = null;
+        entityToUpdate.totalPrice = null;
       }
 
       // Save changes and commit transaction
@@ -242,7 +247,10 @@ export class BookingService {
       );
       await queryRunner.commitTransaction();
 
-      return updatedBooking;
+      return {
+        ...updatedBooking,
+        room: {room: roomId},
+      };
     } catch (error) {
       await queryRunner.rollbackTransaction();
       throw new BadRequestException(
@@ -253,25 +261,32 @@ export class BookingService {
     }
   }
 
-  async remove(id: string) {
-    const queryRunner =
-      this.bookingRepository.manager.connection.createQueryRunner();
+async remove(id: string) {
+    const queryRunner = this.bookingRepository.manager.connection.createQueryRunner();
     await queryRunner.startTransaction();
     try {
+      // Get booking with room in a single query
       const booking = await queryRunner.manager.findOne(Booking, {
         where: { id },
-        relations: ['room', 'user'],
+        relations: ['room'],
+        select: ['id', 'room'] // Only select needed fields
       });
+
       if (!booking) throw new NotFoundException('Booking not found');
-      await queryRunner.manager.remove(Booking, booking);
-      await queryRunner.manager.save(Room, {
-        ...booking.room,
-        status: RoomStatus.AVAILABLE,
-      });
+
+      // Update room status and remove booking in parallel
+      await Promise.all([
+        queryRunner.manager.remove(Booking, booking),
+        queryRunner.manager.save(Room,{
+          ...booking.room,
+          status: RoomStatus.AVAILABLE,
+          bookings: booking.room.bookings.filter(b => b.id !== booking.id)
+        })
+      ]);
       await queryRunner.commitTransaction();
       return {
         statusCode: HttpStatus.OK,
-        message: 'Booking deleted successfully'
+        message: 'Booking deleted successfully',
       };
     } catch (error) {
       await queryRunner.rollbackTransaction();

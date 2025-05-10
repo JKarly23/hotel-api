@@ -29,15 +29,15 @@ export class Booking {
     example: '2025-06-01T15:00:00.000Z',
     description: 'Fecha y hora programadas para el check-in',
   })
-  @Column({ type: 'timestamp' })
-  checkInDate: Date;
+  @Column({ type: 'timestamp', nullable: true })
+  checkInDate: Date | null;
 
   @ApiProperty({
     example: '2025-06-07T11:00:00.000Z',
     description: 'Fecha y hora programadas para el check-out',
   })
-  @Column({ type: 'timestamp' })
-  checkOutDate: Date;
+  @Column({ type: 'timestamp', nullable: true })
+  checkOutDate: Date | null;
 
   @ApiPropertyOptional({
     example: '2025-06-01T15:30:00.000Z',
@@ -64,8 +64,8 @@ export class Booking {
     example: 750.0,
     description: 'Precio total de la reserva',
   })
-  @Column('float')
-  totalPrice: number;
+  @Column('float', {nullable: true})
+  totalPrice: number | null;
 
   @ApiProperty({
     enum: BookingStatus,
@@ -84,8 +84,8 @@ export class Booking {
     example: PaymentStatus.PENDING,
     description: 'Estado del pago',
   })
-  @Column({ type: 'enum', enum: PaymentStatus, default: PaymentStatus.PENDING })
-  paymentStatus: PaymentStatus;
+  @Column({ type: 'enum', enum: PaymentStatus, default: PaymentStatus.PENDING, nullable: true })
+  paymentStatus: PaymentStatus | null;
 
   @ApiProperty({
     enum: PaymentMethod,
@@ -124,7 +124,7 @@ export class Booking {
     type: () => Auth,
     description: 'Usuario que realizó la reserva',
   })
-  @ManyToOne(() => Auth, (user) => user.bookings)
+  @ManyToOne(() => Auth, (user) => user.bookings, { onDelete: 'CASCADE' })
   @JoinColumn()
   user: Auth;
 
@@ -132,7 +132,10 @@ export class Booking {
     type: () => Room,
     description: 'Habitación asociada a la reserva',
   })
-  @ManyToOne(() => Room, (room) => room.bookings, { eager: true })
+  @ManyToOne(() => Room, (room) => room.bookings, {
+    eager: true,
+    onDelete: 'CASCADE',
+  })
   @JoinColumn()
   room: Room;
 }

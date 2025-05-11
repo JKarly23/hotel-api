@@ -39,6 +39,7 @@ export class AuthService {
         id: newUser.id,
         ...data,
         token: await this.getJwtToken({ id: newUser.id, role: newUser.role }),
+        bookings: [],
       };
     } catch (err) {
       this.handleException(err);

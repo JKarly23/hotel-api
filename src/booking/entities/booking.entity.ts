@@ -64,7 +64,7 @@ export class Booking {
     example: 750.0,
     description: 'Precio total de la reserva',
   })
-  @Column('float', {nullable: true})
+  @Column('float', { nullable: true })
   totalPrice: number | null;
 
   @ApiProperty({
@@ -84,7 +84,12 @@ export class Booking {
     example: PaymentStatus.PENDING,
     description: 'Estado del pago',
   })
-  @Column({ type: 'enum', enum: PaymentStatus, default: PaymentStatus.PENDING, nullable: true })
+  @Column({
+    type: 'enum',
+    enum: PaymentStatus,
+    default: PaymentStatus.PENDING,
+    nullable: true,
+  })
   paymentStatus: PaymentStatus | null;
 
   @ApiProperty({
@@ -124,7 +129,10 @@ export class Booking {
     type: () => Auth,
     description: 'Usuario que realizó la reserva',
   })
-  @ManyToOne(() => Auth, (user) => user.bookings, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Auth, (user) => user.bookings, {
+    onDelete: 'CASCADE',
+    eager: true,
+  })
   @JoinColumn()
   user: Auth;
 

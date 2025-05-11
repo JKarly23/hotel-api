@@ -249,7 +249,7 @@ export class BookingService {
 
       return {
         ...updatedBooking,
-        room: {room: roomId},
+        room: booking.room,
       };
     } catch (error) {
       await queryRunner.rollbackTransaction();
@@ -261,15 +261,16 @@ export class BookingService {
     }
   }
 
-async remove(id: string) {
-    const queryRunner = this.bookingRepository.manager.connection.createQueryRunner();
+  async remove(id: string) {
+    const queryRunner =
+      this.bookingRepository.manager.connection.createQueryRunner();
     await queryRunner.startTransaction();
     try {
       // Get booking with room in a single query
       const booking = await queryRunner.manager.findOne(Booking, {
         where: { id },
         relations: ['room'],
-        select: ['id', 'room'] // Only select needed fields
+        select: ['id', 'room'], // Only select needed fields
       });
 
       if (!booking) throw new NotFoundException('Booking not found');
@@ -277,11 +278,11 @@ async remove(id: string) {
       // Update room status and remove booking in parallel
       await Promise.all([
         queryRunner.manager.remove(Booking, booking),
-        queryRunner.manager.save(Room,{
+        queryRunner.manager.save(Room, {
           ...booking.room,
           status: RoomStatus.AVAILABLE,
-          bookings: booking.room.bookings.filter(b => b.id !== booking.id)
-        })
+          bookings: booking.room.bookings.filter((b) => b.id !== booking.id),
+        }),
       ]);
       await queryRunner.commitTransaction();
       return {

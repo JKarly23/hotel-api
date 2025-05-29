@@ -33,7 +33,7 @@ export class BookingTask {
     const now = new Date();
     const bookings = await this.bookingRepository.find({
       where: {
-        status: BookingStatus.PENDING,
+        status: BookingStatus.CONFIRMED,
         actualCheckIn: IsNull(),
         checkOutDate: LessThan(now),
       },
@@ -41,6 +41,10 @@ export class BookingTask {
     for (const booking of bookings) {
       booking.status = BookingStatus.NO_SHOW;
       booking.room.status = RoomStatus.AVAILABLE;
+      booking.checkInDate = null;
+      booking.checkOutDate = null;
+      booking.paymentStatus = null;
+      booking.totalPrice = null;
       await this.bookingRepository.manager.transaction(async (manager) => {
         await manager.save(booking.room);
         await manager.save(booking);

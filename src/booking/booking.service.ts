@@ -143,7 +143,7 @@ export class BookingService {
       if (now < checkInDate)
         throw new BadRequestException('Booking is not today or late');
       booking.actualCheckIn = now;
-      booking.status = BookingStatus.CONFIRMED;
+      booking.status = BookingStatus.CHECKED_IN;
       booking.room.status = RoomStatus.RESERVED;
       await queryRunner.manager.save(Booking, booking);
       await queryRunner.manager.save(Room, booking.room);

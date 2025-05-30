@@ -54,6 +54,7 @@ export class RoomService {
   async findAllData() {
     const rooms = await this.roomRepository.find({
       relations: ['bookings'],
+      order: { id: 'DESC' },
     });
     return rooms;
   }
